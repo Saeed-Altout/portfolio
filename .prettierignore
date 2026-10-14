@@ -4,4 +4,14 @@ node_modules/
 .turbo/
 coverage/
 pnpm-lock.yaml
+package-lock.json
 .pnpm-store/
+next-env.d.ts
+generated/
+supabase/.temp/
+supabase/.branches/
+test-results/
+playwright-report/
+blob-report/
+tests/e2e/.auth/
+.claude/skills/

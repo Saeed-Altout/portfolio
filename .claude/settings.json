@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(npx shadcn@latest *)",
+      "Bash(npx prisma *)",
+      "Bash(npx supabase *)",
+      "Bash(npx auth@latest *)",
+      "Bash(npx playwright *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "PowerShell(npm run *)",
+      "PowerShell(npx shadcn@latest *)",
+      "PowerShell(npx prisma *)",
+      "PowerShell(npx supabase *)",
+      "PowerShell(npx auth@latest *)",
+      "PowerShell(npx playwright *)",
+      "PowerShell(git status *)",
+      "PowerShell(git diff *)",
+      "PowerShell(git log *)",
+      "PowerShell(git add *)"
+    ],
+    "ask": [
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git tag *)",
+      "Bash(git reset *)",
+      "Bash(git rebase *)",
+      "PowerShell(git commit *)",
+      "PowerShell(git push *)",
+      "PowerShell(git tag *)",
+      "PowerShell(git reset *)",
+      "PowerShell(git rebase *)"
+    ],
+    "deny": [
+      "Bash(git push --force *)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f*)",
+      "PowerShell(git push --force*)",
+      "PowerShell(git push -f*)",
+      "PowerShell(git push * --force*)",
+      "PowerShell(git push * -f*)",
+      "Read(./.env.local)",
+      "Read(./.env.production)",
+      "Read(./.env.production.local)"
+    ]
+  }
+}
