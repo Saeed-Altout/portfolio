@@ -47,6 +47,8 @@ export default defineConfig({
   webServer: {
     command: `npm run build && npm run start -- --port ${port}`,
     url: baseURL,
+    // Serves the dev-only /design page from the production build.
+    env: { DESIGN_PAGE: "on" },
     reuseExistingServer: false,
     timeout: 300_000,
   },

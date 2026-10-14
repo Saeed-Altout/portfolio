@@ -38,6 +38,10 @@ export const serverSchema = z.object({
   EMAIL_FROM: z.string().optional(),
   CONTACT_INBOX: z.email({ error: "must be an email address" }).optional(),
   TURNSTILE_SECRET_KEY: z.string().optional(),
+  // The dev-only /design page; "on" also serves it from a production build.
+  DESIGN_PAGE: z
+    .enum(["on", "off"], { error: 'must be "on" or "off"' })
+    .optional(),
 })
 
 export type ClientEnv = z.infer<typeof clientSchema>

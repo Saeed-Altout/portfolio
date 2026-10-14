@@ -1,23 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-const valid = {
-  NEXT_PUBLIC_SITE_URL: "http://localhost:3000",
-  NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321",
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_test",
-  NEXT_PUBLIC_TURNSTILE_SITE_KEY: "",
-  DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres",
-  DIRECT_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres",
-  BETTER_AUTH_SECRET: "x".repeat(32),
-  BETTER_AUTH_URL: "http://localhost:3000",
-  SUPABASE_URL: "http://127.0.0.1:54321",
-  SUPABASE_SECRET_KEY: "sb_secret_test",
-  RESEND_API_KEY: "",
-  EMAIL_FROM: "",
-  CONTACT_INBOX: "",
-  TURNSTILE_SECRET_KEY: "",
-}
-
-type Overrides = Partial<Record<keyof typeof valid, string | undefined>>
+import {
+  validEnv as valid,
+  type EnvOverrides as Overrides,
+} from "@/tests/fixtures/env"
 
 /** Imports lib/env.ts fresh, so its startup validation runs against `overrides`. */
 async function loadEnv(overrides: Overrides = {}) {
@@ -84,6 +70,15 @@ describe("lib/env", () => {
         "  - SUPABASE_SECRET_KEY must be a Supabase secret key (sb_secret_...)",
         "Set them in .env.local (see .env.example).",
       ].join("\n")
+    )
+  })
+
+  it("accepts only on or off for DESIGN_PAGE", async () => {
+    const { env } = await loadEnv({ DESIGN_PAGE: "on" })
+    expect(env.DESIGN_PAGE).toBe("on")
+
+    await expect(loadEnv({ DESIGN_PAGE: "yes" })).rejects.toThrow(
+      '  - DESIGN_PAGE must be "on" or "off"'
     )
   })
 
