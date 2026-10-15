@@ -20,7 +20,9 @@ The plan is docs/PLAN.md. Work one phase at a time, in order. Record every devia
 - Authored text uses components/ui/typography.tsx. Rendered rich text uses the `typeset` class.
 - Logical classes only: ms, me, ps, pe, start, end, text-start. No ml, mr, pl, pr, left, right.
 - Directional icons get `rtl:rotate-180`.
-- No visible string outside messages/ar.json and messages/en.json, and both files keep identical keys.
+- No visible string outside messages/ar.json and messages/en.json, and both files keep identical keys. ESLint (`react/jsx-no-literals`) rejects JSX text.
+- Client components only see the namespaces in `clientNamespaces` (app/[locale]/layout.tsx). Add a namespace there before a client component uses it.
+- Links and redirects come from `@/i18n/navigation`; ESLint bans next/link and next/navigation's redirect, useRouter, usePathname.
 - Forms: FieldGroup + Field, react-hook-form + zodResolver, and the same Zod schema on the server.
 - Server files start with `import "server-only"`. Every action calls requirePermission() first.
 - Zustand for UI state only. TanStack Query only inside the dashboard.

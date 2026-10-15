@@ -14,6 +14,9 @@ export default defineConfig({
   },
   test: {
     exclude: ["**/node_modules/**", "**/.next/**", "tests/e2e/**"],
+    // next-intl imports "next/navigation" without an extension, which Node's
+    // ESM resolver rejects; Vite's resolver handles it.
+    server: { deps: { inline: ["next-intl"] } },
     projects: [
       {
         extends: true,

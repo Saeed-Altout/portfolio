@@ -1,0 +1,182 @@
+{
+  "common": {
+    "otherLanguage": "العربية",
+    "theme": {
+      "toggle": "Toggle theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "close": "Close",
+    "loading": "Loading",
+    "notifications": "Notifications"
+  },
+  "seo": {
+    "siteName": "Portfolio",
+    "description": "Projects, articles, and a course, in Arabic and English."
+  },
+  "home": {
+    "title": "Portfolio",
+    "lead": "The site is being built. The first pages are on the way."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist or has moved.",
+    "backHome": "Back to home"
+  },
+  "validation": {
+    "required": "This field is required.",
+    "email": "Enter a valid email address.",
+    "invalid": "Check this value."
+  },
+  "design": {
+    "metaTitle": "Design system",
+    "title": "Design system",
+    "description": "Every building block of the site, in both directions and both themes.",
+    "sections": {
+      "typography": "Typography",
+      "buttons": "Buttons",
+      "badges": "Badges",
+      "forms": "Forms",
+      "cards": "Cards and items",
+      "feedback": "Feedback",
+      "empty": "Empty state",
+      "richText": "Rich text (Typeset)",
+      "formatting": "Dates and numbers",
+      "overlays": "Overlays and navigation"
+    },
+    "typography": {
+      "h1": "Designing a low-cost pulse oximeter",
+      "lead": "A case study covering requirements, hardware, software, and results, from the first sketch to a working prototype.",
+      "h2": "Requirements and safety",
+      "p": "The device measures blood oxygen saturation (SpO2) and pulse rate with a MAX30102 sensor. The circuit runs on a 3.7 V battery, draws less than 20 mA, and shows readings on a 128×64 OLED display.",
+      "h3": "Signal acquisition",
+      "h4": "Sampling at 100 Hz",
+      "blockquote": "A good medical device is one the patient trusts before the doctor does.",
+      "list": {
+        "calibrate": "Calibrate the sensor on 20 volunteers",
+        "compare": "Compare results with a certified reference device",
+        "document": "Document the known limits and error cases"
+      },
+      "formulaLabel": "The estimate uses",
+      "formula": "SpO2 = 110 - 25 × R",
+      "large": "Publish this post?",
+      "small": "Email address",
+      "muted": "Last updated 3 days ago."
+    },
+    "buttons": {
+      "primary": "View project",
+      "secondary": "Download CV",
+      "outline": "Contact me",
+      "ghost": "Cancel",
+      "destructive": "Delete",
+      "link": "Read more",
+      "loading": "Saving",
+      "next": "Next episode"
+    },
+    "badges": {
+      "published": "Published",
+      "draft": "Draft",
+      "archived": "Archived",
+      "rejected": "Rejected"
+    },
+    "form": {
+      "legend": "Get in touch",
+      "description": "I usually reply within two working days.",
+      "name": "Name",
+      "namePlaceholder": "Your full name",
+      "email": "Email",
+      "emailInvalidValue": "saeed@",
+      "message": "Message",
+      "messagePlaceholder": "Write your message here",
+      "messageHint": "I never share your email.",
+      "submit": "Send message"
+    },
+    "card": {
+      "title": "Wireless heart-rate monitor",
+      "description": "Remote patient monitoring over Bluetooth Low Energy",
+      "body": "An ECG front end, an ESP32, and a mobile app that alerts the nurse when the heart rate leaves the safe range.",
+      "action": "View details",
+      "items": {
+        "oximeter": {
+          "title": "Pulse oximeter",
+          "description": "Medical devices · 2025"
+        },
+        "booking": {
+          "title": "Clinic booking system",
+          "description": "Health software · 2024"
+        }
+      },
+      "open": "Open"
+    },
+    "feedback": {
+      "alertTitle": "Changes saved",
+      "alertDescription": "The new version appears on the site within minutes.",
+      "toast": "Show toast",
+      "toastMessage": "Link copied",
+      "avatarFallback": "SA"
+    },
+    "empty": {
+      "title": "No posts yet",
+      "description": "Write your first post and it will show up here.",
+      "action": "New post"
+    },
+    "richText": {
+      "heading": "Results",
+      "paragraph": "Across 20 volunteers, readings stayed within 2% of the reference device at rest. Motion added more than 3% of noise, so the firmware now drops samples taken while the accelerometer reports movement.",
+      "otherLanguage": "تبقى المصطلحات التقنية بالإنجليزية عندما يكون ذلك أوضح.",
+      "list": {
+        "error": "Mean absolute error: 1.4%",
+        "battery": "Battery life: 31 hours",
+        "cost": "Cost of parts: $18"
+      },
+      "quote": "Measure twice, solder once.",
+      "code": "const spo2 = 110 - 25 * ratio",
+      "table": {
+        "label": "Prototype compared with the reference device",
+        "metric": "Metric",
+        "prototype": "Prototype",
+        "reference": "Reference",
+        "rows": {
+          "rest": {
+            "metric": "SpO2 at rest",
+            "prototype": "97%",
+            "reference": "98%"
+          },
+          "pulse": {
+            "metric": "Pulse rate",
+            "prototype": "72 bpm",
+            "reference": "71 bpm"
+          }
+        }
+      }
+    },
+    "formatting": {
+      "description": "Each value is formatted once on the server and once in the browser. Both columns must match.",
+      "server": "Server",
+      "client": "Browser",
+      "date": "Date",
+      "number": "Number",
+      "percent": "Percent",
+      "plural": "Plural",
+      "downloads": "{count, plural, one {# download} other {# downloads}}"
+    },
+    "overlays": {
+      "dialogTrigger": "Open dialog",
+      "dialogTitle": "Delete this post?",
+      "dialogDescription": "The post and its comments are removed for good. This cannot be undone.",
+      "dialogCancel": "Cancel",
+      "dialogConfirm": "Delete",
+      "sheetTrigger": "Open sheet",
+      "sheetTitle": "Menu",
+      "sheetDescription": "Navigation on small screens.",
+      "tooltipTrigger": "Copy link",
+      "tooltip": "Copy the post link",
+      "nav": {
+        "home": "Home",
+        "projects": "Projects",
+        "blog": "Blog"
+      }
+    }
+  }
+}

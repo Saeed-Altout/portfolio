@@ -1,11 +1,6 @@
-import AxeBuilder from "@axe-core/playwright"
 import { expect, test, type Page } from "@playwright/test"
 
-// Until Phase 2 adds locale routes, /design?lang= picks the language, and the
-// project name (ar-light, en-dark, ...) says which one each project covers.
-function projectLang(projectName: string) {
-  return projectName.startsWith("ar") ? "ar" : "en"
-}
+import { collectErrors, projectLang, seriousViolations } from "./helpers"
 
 /** Font families Chromium actually used to draw the text inside `selector`. */
 async function renderedFonts(page: Page, selector: string) {
@@ -28,11 +23,12 @@ test.describe("/design", () => {
     page,
   }, testInfo) => {
     const lang = projectLang(testInfo.project.name)
-    await page.goto(`/design?lang=${lang}`)
+    const errors = collectErrors(page)
+    await page.goto(`/${lang}/design`)
 
-    const main = page.getByRole("main")
-    await expect(main).toHaveAttribute("lang", lang)
-    await expect(main).toHaveAttribute("dir", lang === "ar" ? "rtl" : "ltr")
+    const html = page.locator("html")
+    await expect(html).toHaveAttribute("lang", lang)
+    await expect(html).toHaveAttribute("dir", lang === "ar" ? "rtl" : "ltr")
 
     const overflow = await page.evaluate(
       () =>
@@ -40,31 +36,17 @@ test.describe("/design", () => {
         document.documentElement.clientWidth
     )
     expect(overflow, "page scrolls sideways").toBe(0)
+    expect(errors).toEqual([])
   })
 
   test("has no serious accessibility issues", async ({ page }, testInfo) => {
-    await page.goto(`/design?lang=${projectLang(testInfo.project.name)}`)
+    await page.goto(`/${projectLang(testInfo.project.name)}/design`)
 
-    const { violations } = await new AxeBuilder({ page }).analyze()
-    const serious = violations.filter(
-      (violation) =>
-        violation.impact === "serious" || violation.impact === "critical"
-    )
-
-    expect(
-      serious.map(
-        (violation) =>
-          `${violation.id}: ${violation.help} → ${violation.nodes
-            .map(
-              (node) => `${node.target.join(" ")} ${node.failureSummary ?? ""}`
-            )
-            .join(" | ")}`
-      )
-    ).toEqual([])
+    expect(await seriousViolations(page)).toEqual([])
   })
 
   test("renders Arabic in Cairo and Latin in Poppins", async ({ page }) => {
-    await page.goto("/design?lang=ar")
+    await page.goto("/ar/design")
 
     for (const selector of ["body", "h1"]) {
       const family = await page
@@ -82,7 +64,7 @@ test.describe("/design", () => {
       "Arabic paragraph with Latin terms such as MAX30102"
     ).toEqual(["Cairo", "Poppins"])
 
-    await page.goto("/design?lang=en")
+    await page.goto("/en/design")
     expect(await renderedFonts(page, "h1")).toEqual(["Poppins"])
     // A single Arabic word, the language switch, uses Cairo alone.
     expect(await renderedFonts(page, "a[hreflang='ar']")).toEqual(["Cairo"])
@@ -92,7 +74,7 @@ test.describe("/design", () => {
     page,
   }, testInfo) => {
     const lang = projectLang(testInfo.project.name)
-    await page.goto(`/design?lang=${lang}`)
+    await page.goto(`/${lang}/design`)
 
     const paragraph = page.locator(".typeset-article > p").first()
     const { fontSize, lineHeight } = await paragraph.evaluate((element) => {
@@ -110,6 +92,37 @@ test.describe("/design", () => {
     expect(lineHeight / fontSize).toBeCloseTo(lang === "ar" ? 2 : 1.85, 2)
   })
 
+  test.describe("formatting", () => {
+    // A browser far from Damascus: the shared time zone must still apply.
+    test.use({ timezoneId: "America/Los_Angeles" })
+
+    test("matches between server and browser, with Western digits", async ({
+      page,
+    }, testInfo) => {
+      const lang = projectLang(testInfo.project.name)
+      const errors = collectErrors(page)
+      await page.goto(`/${lang}/design`)
+
+      for (const kind of ["date", "number", "percent"]) {
+        const row = page.locator(`tr[data-format="${kind}"]`)
+        const server = await row.locator("[data-source='server']").innerText()
+        await expect(row.locator("[data-source='client']")).toHaveText(server)
+      }
+
+      const date = page.locator("tr[data-format='date'] [data-source='server']")
+      await expect(date).toHaveText(
+        lang === "ar" ? "7 أكتوبر 2026" : "October 7, 2026"
+      )
+      await expect(
+        page.locator("tr[data-format='plural'] [data-source='server']")
+      ).toHaveText(lang === "ar" ? "3 تنزيلات" : "3 downloads")
+
+      const text = await page.getByRole("main").innerText()
+      expect(text, "Arabic-Indic digits").not.toMatch(/[٠-٩۰-۹]/)
+      expect(errors, "hydration or console errors").toEqual([])
+    })
+  })
+
   test("switches themes with no flash on reload", async ({
     page,
   }, testInfo) => {
@@ -119,7 +132,7 @@ test.describe("/design", () => {
           document.documentElement.className
       })
     })
-    await page.goto("/design?lang=en")
+    await page.goto("/en/design")
     const html = page.locator("html")
     const toggle = page.getByRole("button", { name: "Toggle theme" })
 
@@ -147,7 +160,7 @@ test.describe("/design", () => {
   })
 
   test("screenshot for review", async ({ page }, testInfo) => {
-    await page.goto(`/design?lang=${projectLang(testInfo.project.name)}`)
+    await page.goto(`/${projectLang(testInfo.project.name)}/design`)
     await page.evaluate(() => document.fonts.ready)
 
     await page.screenshot({

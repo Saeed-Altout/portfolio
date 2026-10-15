@@ -16,11 +16,11 @@ describe("Button", () => {
   it("renders its child element with asChild", () => {
     render(
       <Button asChild>
-        <a href="/contact">Contact</a>
+        <a href="mailto:hello@example.com">Email</a>
       </Button>
     )
 
-    expect(screen.getByRole("link", { name: "Contact" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Email" })).toHaveAttribute(
       "data-slot",
       "button"
     )

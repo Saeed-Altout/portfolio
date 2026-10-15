@@ -35,12 +35,8 @@ describe("/design guard", () => {
       "./page",
       { NODE_ENV: "production" }
     )
-    const props = {
-      params: Promise.resolve({}),
-      searchParams: Promise.resolve({}),
-    } as PageProps<"/design">
 
-    await expect(DesignPage(props)).rejects.toMatchObject({
+    await expect(DesignPage()).rejects.toMatchObject({
       digest: "NEXT_HTTP_ERROR_FALLBACK;404",
     })
   })

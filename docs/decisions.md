@@ -81,3 +81,40 @@ Every place the build differs from docs/PLAN.md, newest phase last. Each entry s
 - **The e2e suite saves review screenshots** to `test-results/screenshots/` on every run, and they are copied into `docs/reviews/phase-N/`.
 - **`tests/fixtures/env.ts`** holds the valid test environment shared by the env and `/design` tests.
 - **Known English strings for Phase 2:** the registry Dialog and Sheet close buttons (`sr-only` "Close") and the Spinner's default `aria-label="Loading"`.
+
+## Phase 2 — Internationalization (2026-10-15)
+
+### Routing and 404s
+
+- **`dynamicParams = false` on `app/[locale]/layout.tsx`, overridden to `true` in `app/[locale]/[...rest]/page.tsx`.** `[locale]` matches any first segment, so `/unknown.txt` became locale "unknown.txt" and the root layout's `notFound()` returned a blank page. With `dynamicParams = false` only `ar` and `en` match, and every other first segment gets `app/global-not-found.tsx` (bilingual, `experimental.globalNotFound`). The catch-all turns it back on, so `/ar/anything` reaches the localized 404. **Phase 5:** Cache Components rejects `dynamicParams` at build time, so the export must go then. Invalid first segments will fall back to Next.js's blank 404 unless the proxy handles them; decide in Phase 5.
+- **Known Next.js 16.3.8 issue: the localized 404 renders in the browser, not in the server HTML.** For `notFound()` under `[locale]`, the server sends an empty `<html id="__next_error__">` shell with the right status (404), title, and `noindex`. The browser then renders `app/[locale]/not-found.tsx` from the React payload, which the e2e test checks. Visitors without JavaScript see a blank page. It persists with a plain `<h1>` not-found page, without the proxy, without `getLocale`, without `globalNotFound`, and without `generateStaticParams`, so it is framework behavior. Recheck on each Next.js upgrade.
+- **`/` redirects to `/ar` (307), and `/fr/anything` to `/ar/fr/anything`, which is a 404.** The next-intl proxy treats an unknown prefix as part of the path.
+
+### Messages
+
+- **Only the namespaces in use exist:** `common`, `seo`, `home`, `notFound`, `validation`, `design`. The plan's other namespaces are added with their features.
+- **Only `common` and `validation` reach the browser.** `NextIntlClientProvider` gets that subset, and everything else renders on the server. A client component that needs another namespace must add it to `clientNamespaces` (also in CLAUDE.md).
+- **The parity test also compares ICU argument names** between `ar.json` and `en.json`, so a translation cannot drop `{count}`.
+- **The design page's sample text moved into `messages/*.json` (`design` namespace).** Arrays became named keys, so every key is type-checked.
+- **The site name is "Portfolio" / "معرض الأعمال"** until Phase 8 reads it from Settings.
+
+### Formatting
+
+- **Shared named formats pin `numberingSystem: "latn"` and the time zone is `Asia/Damascus`.** next-intl has no default format that applies to unnamed calls or ICU `{n, number}`, so code uses named formats (`format.number(x, "decimal")`). Node 24 and Chromium (CLDR 47) already default `ar` to Western digits (`ar-SY` would give ١٬٢٣٤٫٥), and an e2e test fails if Arabic-Indic digits appear anywhere on the design page.
+- **Server and browser formatting are compared in e2e** with the browser in America/Los_Angeles. The sample time (22:30 UTC) is already the next day in Damascus, so a browser ignoring the shared time zone would mismatch.
+
+### Components and guards
+
+- **The language switcher is a `Link`, not `router.replace`.** It works without JavaScript, carries `hreflang` and `lang`, and lets crawlers find the other version. It keeps the path and drops the query string.
+- **Registry Dialog, Sheet, and Spinner read their labels from `common`** ("Close", "Loading"), including the optional Dialog footer close button.
+- **Two ESLint rules enforce the plan:** `no-restricted-imports` bans `next/link` and next/navigation's `redirect`, `permanentRedirect`, `useRouter`, `usePathname`, and `react/jsx-no-literals` rejects JSX text in `app/` and `components/` (tests excluded). The second rule goes beyond the plan.
+- **`TranslatedFieldError`** (`components/form/`) renders Zod and server errors whose message is a `ValidationKey`. Anything else shows `validation.invalid`, so raw English never reaches the page.
+- **The Button test's `asChild` link is now `mailto:`.** With the catch-all route, `@next/next/no-html-link-for-pages` treats `<a href="/contact">` as an internal page.
+- **Vitest inlines `next-intl`** (`test.server.deps.inline`). It imports `next/navigation` without an extension, which Node's ESM resolver rejects.
+
+### Layout
+
+- **Fonts live in `app/fonts.ts`,** shared by the root layout and `global-not-found.tsx`.
+- **The Toaster follows the direction:** `dir`, `bottom-left` in Arabic, and a translated container label.
+- **`/design` moved to `/[locale]/design` and is static now,** so `DESIGN_PAGE` is read at build time. The Playwright server sets it for both build and start.
+- **`next/font/google` downloads fonts during `dev` and `build`.** On this machine `next dev` failed once while Google Fonts was unreachable. Phase 8 commits the font files for Takumi anyway; switching to `next/font/local` then removes the network dependency.
