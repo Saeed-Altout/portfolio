@@ -38,3 +38,5 @@ npm run setup | dev | gate | test | test:e2e | db:migrate | db:deploy | storage:
 - Windows machine: Git Bash and PowerShell are both available. Files use LF (.gitattributes).
 - Environment variables are validated by lib/env.ts, imported from next.config.ts. `dev`, `build`, `start`, and `typecheck` need a valid .env.local (see .env.example).
 - Pin exact versions (`.npmrc` has `save-exact=true`).
+- `npm run test` includes integration tests against the local Supabase stack (Docker): run `npm run db:start` (or `npm run setup` on a fresh machine) first.
+- Prisma is pinned to 7.x: never `npm i prisma@latest` (latest is the 8.0 release candidate).

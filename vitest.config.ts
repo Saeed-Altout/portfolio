@@ -41,6 +41,22 @@ export default defineConfig({
           setupFiles: ["tests/setup/component.ts"],
         },
       },
+      {
+        extends: true,
+        test: {
+          // Against the local Supabase stack (npm run setup): the
+          // portfolio_test database and Storage. One file at a time, each
+          // starting from empty tables.
+          name: "integration",
+          environment: "node",
+          include: ["tests/integration/**/*.test.ts"],
+          fileParallelism: false,
+          globalSetup: ["tests/setup/integration-global.ts"],
+          setupFiles: ["tests/setup/integration.ts"],
+          testTimeout: 30_000,
+          hookTimeout: 120_000,
+        },
+      },
     ],
   },
 })

@@ -118,3 +118,47 @@ Every place the build differs from docs/PLAN.md, newest phase last. Each entry s
 - **The Toaster follows the direction:** `dir`, `bottom-left` in Arabic, and a translated container label.
 - **`/design` moved to `/[locale]/design` and is static now,** so `DESIGN_PAGE` is read at build time. The Playwright server sets it for both build and start.
 - **`next/font/google` downloads fonts during `dev` and `build`.** On this machine `next dev` failed once while Google Fonts was unreachable. Phase 8 commits the font files for Takumi anyway; switching to `next/font/local` then removes the network dependency.
+
+## Phase 3 — Database and storage by script (2026-10-16)
+
+### Local stack
+
+- **Docker Desktop runs on WSL 3.0.3, installed from Microsoft's MSI.** On this Windows Insider build, `wsl --install` failed with `Wsl/CallMsi/Install/REGDB_E_CLASSNOTREG` because of a sideloaded WSL 2.3.26 package. The official MSI from github.com/microsoft/WSL fixed it (checksum and Microsoft signature verified). This is machine setup, not a repo change.
+- **Supabase services the app does not use are off** in `supabase/config.toml`: Realtime, Studio, the email catcher, Edge Functions, analytics, S3 protocol, vector buckets, and the CLI's seed step. What runs: Postgres, Storage, PostgREST, Kong, and Supabase Auth.
+- **Supabase Auth runs only so `supabase status` reports the API keys.** With it off, the CLI prints no `PUBLISHABLE_KEY` or `SECRET_KEY`. The app never calls it (decision 6 stands); the alternative was scraping keys from container internals.
+
+### Schema
+
+- **`role` and `locale` on `User` are Postgres enums** (`Role`: admin, user, guest; `Locale`: ar, en). Better Auth generates them as strings; with enums the database itself rejects any other value. Phase 4's integration tests confirm Better Auth works with them.
+- **Better Auth already creates a `RateLimit` model** (`rateLimit` table: key, count, lastRequest) for `rateLimit.storage: "database"`. Phase 5 must reuse it or give its own model another name; the plan's `RateLimit` (key, count, resetAt) would collide.
+- **The schema-shaping Better Auth options live in `server/auth-options.ts`** (plugins, the `locale` field, database rate limiting), without `server-only`. The schema generator cannot load `server/auth.ts`, which starts with `import "server-only"`.
+- **`npm run auth:schema` writes to `generated/auth-schema.prisma`, not `prisma/schema.prisma`.** A rerun would overwrite the enum and relation edits, so its output is for diffing after Better Auth upgrades. The CLI is pinned as a dev dependency (`auth@1.7.10`).
+- **The init migration has 24 tables:** Better Auth's 5, the plan's 17 models, and the 2 implicit join tables for tags.
+
+### Prisma 7
+
+- **`prisma` is pinned to 7.10.1 because npm's `latest` tag now points at 8.0.0-rc.23.** CLAUDE.md warns against `prisma@latest`.
+- **`prisma.config.ts` sets `datasource.url` to `DIRECT_URL`.** Prisma 7 removed `directUrl`, so the config URL is the CLI's only connection, and the app connects through the pg adapter with `DATABASE_URL`.
+- **`db:migrate` runs `prisma generate` after `migrate dev`,** because Prisma 7 no longer does it automatically. `typecheck` and `build` also generate first, so a fresh clone typechecks.
+- **npm's held-back install scripts are still unapproved** (prisma, @prisma/engines, @swc/core, @parcel/watcher, esbuild, unrs-resolver). Prisma 7 needs no Rust query engine and finds its schema engine without them.
+
+### Scripts
+
+- **Each script is a thin entry over `scripts/lib/`,** where tests import the same code. `db:migrate` and `db:deploy` share `scripts/db.ts`, which hardens after migrating.
+- **Hardening also revokes `service_role`,** not only `anon` and `authenticated`. The app never uses the Data API, so even a leaked secret key cannot read app tables through it. The integration test checks all three roles.
+- **`env:local` never prints a value.** It updates only the six Supabase variables in `.env.local`, creates the file from `.env.example` when missing, and generates `BETTER_AUTH_SECRET` when empty.
+- **`setup` is `db:start`, `env:local`, `db:deploy`, `storage:setup`, `db:test`.** Phases 4 and 5 append `seed:admin` and `seed:demo`. Verified from wiped Docker volumes, then run a second time with no changes.
+- **Commands run through one quoted command line.** `npx` is `npx.cmd` on Windows, which needs a shell, and an args array with `shell: true` triggers Node's DEP0190 warning.
+- **Bucket sizes are binary megabytes** (5, 1, and 50 MiB), matching Supabase's own `50MiB` default.
+
+### Tests
+
+- **The hardening tests run against both databases.** Supabase's default grants to the API roles exist only in its `postgres` database; a fresh `portfolio_test` never had them, so a test there alone would pass trivially.
+- **The Data API probe checks for PostgreSQL error `42501`** (permission denied), after a positive call to the API root, so it cannot pass because of a malformed request. It also probes with the secret key.
+- **Storage tests write under `__integration__/<timestamp>/` and delete their files afterwards.** Storage is shared with the dev stack.
+- **Integration tests run one file at a time.** A global setup prepares `portfolio_test`, and each file starts from empty tables.
+- **The design page's guard test has a 30-second timeout.** Importing the whole page fresh took 6 seconds while the integration project ran alongside; the assertion is unchanged.
+
+### Phase 2 follow-up
+
+- **`/unknown.txt` logs `Error: Internal: NoFallbackError` on the server.** With `dynamicParams = false`, Next.js logs its internal no-fallback signal before serving the correct global 404. It appeared five times in the Phase 2 gate log too, and I missed it then. It is noise, not a failure, and it goes away when Phase 5 removes `dynamicParams`.

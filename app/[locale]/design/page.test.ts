@@ -30,14 +30,22 @@ describe("/design guard", () => {
     expect(isDesignPageEnabled(nodeEnv, flag)).toBe(on)
   })
 
-  it("returns not found from a production build by default", async () => {
-    const { default: DesignPage } = await load<typeof import("./page")>(
-      "./page",
-      { NODE_ENV: "production" }
-    )
+  // A fresh import of the whole page and its components takes several
+  // seconds when the integration project runs alongside.
+  it(
+    "returns not found from a production build by default",
+    {
+      timeout: 30_000,
+    },
+    async () => {
+      const { default: DesignPage } = await load<typeof import("./page")>(
+        "./page",
+        { NODE_ENV: "production" }
+      )
 
-    await expect(DesignPage()).rejects.toMatchObject({
-      digest: "NEXT_HTTP_ERROR_FALLBACK;404",
-    })
-  })
+      await expect(DesignPage()).rejects.toMatchObject({
+        digest: "NEXT_HTTP_ERROR_FALLBACK;404",
+      })
+    }
+  )
 })
